@@ -1,24 +1,48 @@
-import requests, colorama, os
+import requests, colorama, os, time, psutil
 from datetime import datetime, timedelta
+
+
+def getOs():
+    getOSType = os.name
+
+    if getOSType == "nt":
+        return "Windows"
+    else:
+        return "Linux"
 
 
 def CheckDependencies():
     try:
-        import requests, colorama
+        import requests, colorama, psutil
     except ImportError:
         print("Missing dependencies, installing...")
-        os.system("pip install requests")
-        os.system("pip install colorama")
+        osType = getOs()
+        if osType == "Windows":
+            os.system("python -m pip install -r requirements.txt")
+        else:
+            os.system("python3 -m pip install -r requirements.txt")
         print("Dependencies installed! Please restart the program.")
         exit()
 
 
+def Clear():
+    getOSType = os.name
+
+    if getOSType == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+
+
 def Start():
     colorama.init()
-
+    Clear()
     print(" -- [ PROJECT ARCANE ] -- ")
-    print(" Created By: alexy.dev")
-    print(" Version: 1.0.0 ")
+    print("Author       : alexy.dev")
+    print("OS Type      : " + getOs())
+    print("CPU Usage    : " + str(psutil.cpu_percent()) + "%")
+    print("RAM Usage    : " + str(psutil.virtual_memory()[2]) + "%")
+    print("Version      : 1.0.0 ")
     print("-------------------------")
 
     inputId = input("Enter Roblox ID: ")
@@ -27,19 +51,29 @@ def Start():
         int(inputId)
         print("Fetching data...")
         print("-------------------------")
-        os.system("cls")
+        Clear()
         data = getAccount(int(inputId))
         groups = getGroups(int(inputId))
         check_alt = isAlt(int(inputId))
+        getPrecense = getCurrentStatus(int(inputId))
 
         print(" -- [ USER FOUND ] --")
-        print(" Username: " + data["name"])
-        print(" ID: " + str(data["id"]))
-        print(" Roblox Creation Date: " + data["created"])
+        print("Username: " + data["name"])
+        print("ID: " + str(data["id"]))
+        print("Is Banned: " + str(data["isBanned"]))
+        print("Last Online: " + getPrecense["userPresences"][0]["lastOnline"])
+        print(
+            "Last Accessed Roblox on: "
+            + getPrecense["userPresences"][0]["lastLocation"]
+        )
+        print("Roblox Creation Date: " + data["created"])
+        print(
+            "Roblox profile link: " + "https://www.roblox.com/users/" + str(data["id"])
+        )
         if not check_alt:
-            print(" Alt Check: " + colorama.Fore.GREEN + "Passed")
+            print("Alt Check: " + colorama.Fore.GREEN + "Passed")
         else:
-            print(" Alt Check: " + colorama.Fore.RED + "Failed (Possible Alt)")
+            print("Alt Check: " + colorama.Fore.RED + "Failed (Possible Alt)")
 
         print(colorama.Fore.RESET + "-------------------------")
         IfGroupCheck = input("Would you like to run a Group Check? [Y/N]: ")
@@ -64,6 +98,7 @@ def Start():
                     exit()
                 else:
                     print("Running group check...")
+                    time.sleep(0.5)
                     print(
                         "A total of "
                         + str(len(groups))
@@ -76,11 +111,12 @@ def Start():
                 groups = getGroups(int(inputId))
 
                 print("Running group check...")
+                time.sleep(0.5)
                 for i in groups:
                     print(f"{i}\n")
 
         else:
-            os.system("cls")
+            Clear()
             print("Group check not required, exiting...")
             exit()
 
@@ -143,6 +179,14 @@ def isAlt(rblxId: int):
             return False
     else:
         return False
+
+
+def getCurrentStatus(rblxId: int):
+    url = "https://presence.roblox.com/v1/presence/users/"
+    data = {"userIds": [rblxId]}
+    response = requests.post(url, json=data)
+    restoJson = response.json()
+    return restoJson
 
 
 def main():
