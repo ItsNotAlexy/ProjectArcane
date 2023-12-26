@@ -19,3 +19,6 @@ Repl.it Workstation:
 This version of Project Arcane is supported in:
   - Windows
   - Linux (Debian, Ubuntu, Etc)
+
+# Showcase
+![image](https://github.com/ItsNotAlexy/ProjectArcane/assets/101402577/d3ec1d10-35bb-40d5-82bf-22a15acbe12d)
